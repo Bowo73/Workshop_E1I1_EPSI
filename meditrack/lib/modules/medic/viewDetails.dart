@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meditrack/services/notifi_service.dart';
 import 'package:meditrack/src/models/medic.dart';
 import 'package:meditrack/src/utils/getFunction.dart';
 
@@ -6,7 +7,7 @@ import 'package:meditrack/src/utils/getFunction.dart';
 class MedicDetailView extends StatelessWidget {
   final Medic medic;
 
-  const MedicDetailView({Key? key, required this.medic}) : super(key: key);
+  const MedicDetailView({super.key, required this.medic});
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +40,15 @@ class MedicDetailView extends StatelessWidget {
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 10),
+            ElevatedButton(
+              child: const Text('Show notifications'),
+              onPressed: () {
+                NotificationService().showNotification(
+                  title: medic.name,
+                  body: 'Il est temps de prendre votre médicament',
+                );
+              },
+            ),
           ],
         ),
       ),

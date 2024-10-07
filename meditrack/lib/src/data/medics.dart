@@ -19,7 +19,7 @@ List<Medic> medicList = [
   Medic(
     name: 'Antibiotique',
     description: 'Traitement antibiotique',
-    time: const TimeOfDay(hour: 20, minute: 0),
+    time: const TimeOfDay(hour: 22, minute: 12),
     reminderType: MedicReminderType.fixedDate,
     fixedDates: [
       DateTime(2024, 10, 7),
