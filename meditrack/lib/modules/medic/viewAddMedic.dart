@@ -81,6 +81,8 @@ class _AddMedicViewState extends State<AddMedicView> {
               // Dropdown pour le type de rappel
               DropdownButtonFormField<MedicReminderType>(
                 value: _selectedType,
+                dropdownColor: Colors
+                    .white, // Définir la couleur de fond du menu déroulant
                 items: MedicReminderType.values.map((type) {
                   return DropdownMenuItem(
                     value: type,
@@ -145,6 +147,7 @@ class _AddMedicViewState extends State<AddMedicView> {
                   children: List<Widget>.generate(7, (index) {
                     final isSelected = _selectedDaysOfWeek.contains(index + 1);
                     return ChoiceChip(
+                      backgroundColor: Colors.white,
                       label: Text(_daysOfWeek[index]),
                       selected: isSelected,
                       onSelected: (selected) {

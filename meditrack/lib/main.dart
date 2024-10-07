@@ -1,3 +1,4 @@
+// ... autres imports
 import 'package:flutter/material.dart';
 import 'package:meditrack/modules/home/view.dart';
 
@@ -11,29 +12,24 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MediTrack', // Titre de l'application
+      title: 'MediTrack',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor:
-            const Color.fromRGBO(248, 248, 248, 1), // Couleur de fond
+        scaffoldBackgroundColor: const Color.fromRGBO(248, 248, 248, 1),
         primarySwatch: Colors.blue,
         colorScheme: ColorScheme.fromSwatch(primarySwatch: Colors.blue),
         // Personnalisation des TextFields
         inputDecorationTheme: const InputDecorationTheme(
           enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-                color: Colors
-                    .blue), // Couleur de la ligne lorsque le TextField est activés
+            borderSide: BorderSide(color: Colors.blue),
           ),
           focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(
-                color: Colors.blue,
-                width:
-                    2.0), // Couleur de la ligne lorsque le TextField est focalisé
+            borderSide: BorderSide(color: Colors.blue, width: 2.0),
           ),
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.transparent, // Rendre l'AppBar transparente
-          elevation: 0, // Enlever l'ombre
+          backgroundColor: Colors.transparent,
+          elevation: 0,
         ),
       ),
       home: const HomeView(),

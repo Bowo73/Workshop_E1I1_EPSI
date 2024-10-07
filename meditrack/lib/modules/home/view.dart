@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:meditrack/modules/calendar/view.dart';
 import 'package:meditrack/modules/emergency/view.dart';
 import 'package:meditrack/modules/medic/viewAddMedic.dart'; // Importation de la vue pour ajouter un médicament
 import 'package:meditrack/modules/medic/viewDetails.dart'; // Importation de la vue pour afficher les détails d'un médicament
@@ -31,6 +32,18 @@ class _HomeViewState extends State<HomeView> {
                 MaterialPageRoute(
                   builder: (context) =>
                       const EmergencyInfoView(), // Navigation vers la vue d'informations
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.calendar_today), // Icône de calendrier
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      CalendarView(), // Navigation vers la vue calendrier
                 ),
               );
             },

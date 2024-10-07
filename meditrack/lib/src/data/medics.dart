@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:meditrack/src/models/medic.dart';
 
-// Exemple de liste de médicaments
 List<Medic> medicList = [
   Medic(
     name: 'Paracétamol',
