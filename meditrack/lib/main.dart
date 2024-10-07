@@ -1,8 +1,10 @@
-// ... autres imports
 import 'package:flutter/material.dart';
 import 'package:meditrack/modules/home/view.dart';
+import 'package:meditrack/services/notifi_service.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  NotificationService().initNotification();
   runApp(const MainApp());
 }
 
