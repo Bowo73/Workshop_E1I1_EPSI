@@ -13,6 +13,8 @@ class _AddMedicViewState extends State<AddMedicView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _dailyCountController =
+      TextEditingController(); // Pour le nombre de jours
   TimeOfDay _selectedTime = TimeOfDay.now();
   MedicReminderType _selectedType = MedicReminderType.daily;
 
@@ -76,12 +78,13 @@ class _AddMedicViewState extends State<AddMedicView> {
                 },
               ),
               const SizedBox(height: 16),
+              // Dropdown pour le type de rappel
               DropdownButtonFormField<MedicReminderType>(
                 value: _selectedType,
                 items: MedicReminderType.values.map((type) {
                   return DropdownMenuItem(
                     value: type,
-                    child: Text(getReminderTypeText(type, null)),
+                    child: Text(getSimpleReminderTypeText(type, null)),
                   );
                 }).toList(),
                 onChanged: (value) {
@@ -91,16 +94,47 @@ class _AddMedicViewState extends State<AddMedicView> {
                     if (value == MedicReminderType.daily) {
                       _selectedDaysOfWeek.clear();
                       _selectedFixedDates.clear();
+                      _dailyCountController
+                          .clear(); // Réinitialiser le champ de nombre de jours
                     } else if (value == MedicReminderType.weekly) {
                       _selectedFixedDates.clear();
+                      _dailyCountController
+                          .clear(); // Réinitialiser le champ de nombre de jours
                     } else if (value == MedicReminderType.fixedDate) {
                       _selectedDaysOfWeek.clear();
+                      _dailyCountController
+                          .clear(); // Réinitialiser le champ de nombre de jours
                     }
                   });
                 },
-                decoration: const InputDecoration(labelText: 'Type de Rappel'),
+                decoration: const InputDecoration(
+                  labelText: 'Type de Rappel',
+                  border: OutlineInputBorder(),
+                ),
               ),
+
               const SizedBox(height: 16),
+
+              // Affichage d'un champ pour le nombre de jours si le type est quotidien
+              if (_selectedType == MedicReminderType.daily) ...[
+                TextFormField(
+                  controller: _dailyCountController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre de jours',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Entrez un nombre de jours';
+                    }
+                    if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                      return 'Veuillez entrer un nombre valide';
+                    }
+                    return null;
+                  },
+                ),
+              ],
 
               // Affichage des jours de la semaine uniquement si le type est hebdomadaire
               if (_selectedType == MedicReminderType.weekly) ...[
@@ -109,8 +143,7 @@ class _AddMedicViewState extends State<AddMedicView> {
                 Wrap(
                   spacing: 8.0,
                   children: List<Widget>.generate(7, (index) {
-                    final isSelected = _selectedDaysOfWeek.contains(
-                        index + 1); // Jours numérotés de 1 (Lun) à 7 (Dim)
+                    final isSelected = _selectedDaysOfWeek.contains(index + 1);
                     return ChoiceChip(
                       label: Text(_daysOfWeek[index]),
                       selected: isSelected,

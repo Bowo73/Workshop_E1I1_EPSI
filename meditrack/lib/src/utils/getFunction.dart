@@ -13,6 +13,19 @@ String getReminderTypeText(MedicReminderType type, Medic? medic) {
   }
 }
 
+String getSimpleReminderTypeText(MedicReminderType type, Medic? medic) {
+  switch (type) {
+    case MedicReminderType.daily:
+      return "Quotidien";
+    case MedicReminderType.weekly:
+      return "Hebdomadaire";
+    case MedicReminderType.fixedDate:
+      return "Dates fixes";
+    default:
+      return "Indéfini";
+  }
+}
+
 String getDayName(int day) {
   switch (day) {
     case 1:
