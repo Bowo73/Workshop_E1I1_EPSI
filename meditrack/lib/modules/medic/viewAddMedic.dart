@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:meditrack/src/models/medic.dart';
 import 'package:meditrack/src/utils/getFunction.dart';
+import 'dart:convert'; // Pour les opérations JSON
 
 class AddMedicView extends StatefulWidget {
   const AddMedicView({Key? key}) : super(key: key);
@@ -13,17 +15,14 @@ class _AddMedicViewState extends State<AddMedicView> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _dailyCountController =
-      TextEditingController(); // Pour le nombre de jours
+  final TextEditingController _dailyCountController = TextEditingController();
+  final TextEditingController _stockController =
+      TextEditingController(); // Nouveau contrôleur pour le stock
   TimeOfDay _selectedTime = TimeOfDay.now();
   MedicReminderType _selectedType = MedicReminderType.daily;
 
-  // Liste pour stocker les jours de la semaine sélectionnés
   final List<int> _selectedDaysOfWeek = [];
-  // Liste pour stocker les dates fixes sélectionnées
   final List<DateTime> _selectedFixedDates = [];
-
-  // Jours de la semaine pour affichage
   final List<String> _daysOfWeek = [
     'Lun',
     'Mar',
@@ -34,6 +33,19 @@ class _AddMedicViewState extends State<AddMedicView> {
     'Dim'
   ];
 
+  Future<void> _saveMedic(Medic newMedic) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Récupérer la liste actuelle des médicaments depuis SharedPreferences
+    List<String> savedMedicList = prefs.getStringList('medicsList') ?? [];
+
+    // Convertir le nouveau médicament en JSON et ajouter à la liste
+    savedMedicList.add(jsonEncode(newMedic.toJson()));
+
+    // Sauvegarder la liste mise à jour
+    await prefs.setStringList('medicsList', savedMedicList);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +53,6 @@ class _AddMedicViewState extends State<AddMedicView> {
         title: const Text('Ajouter un Médicament'),
       ),
       body: SingleChildScrollView(
-        // Ajout du ScrollView
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
@@ -61,6 +72,21 @@ class _AddMedicViewState extends State<AddMedicView> {
                     value!.isEmpty ? 'Entrez une description' : null,
               ),
               const SizedBox(height: 16),
+              TextFormField(
+                controller: _stockController, // Champ pour le stock
+                decoration: const InputDecoration(
+                  labelText: 'Stock disponible',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value!.isEmpty) return 'Entrez un stock';
+                  if (int.tryParse(value) == null || int.parse(value) < 0)
+                    return 'Veuillez entrer un nombre valide';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
               ListTile(
                 title:
                     Text("Heure de prise : ${_selectedTime.format(context)}"),
@@ -78,11 +104,9 @@ class _AddMedicViewState extends State<AddMedicView> {
                 },
               ),
               const SizedBox(height: 16),
-              // Dropdown pour le type de rappel
               DropdownButtonFormField<MedicReminderType>(
                 value: _selectedType,
-                dropdownColor: Colors
-                    .white, // Définir la couleur de fond du menu déroulant
+                dropdownColor: Colors.white,
                 items: MedicReminderType.values.map((type) {
                   return DropdownMenuItem(
                     value: type,
@@ -92,20 +116,16 @@ class _AddMedicViewState extends State<AddMedicView> {
                 onChanged: (value) {
                   setState(() {
                     _selectedType = value!;
-                    // Réinitialiser les jours et dates lorsque le type change
                     if (value == MedicReminderType.daily) {
                       _selectedDaysOfWeek.clear();
                       _selectedFixedDates.clear();
-                      _dailyCountController
-                          .clear(); // Réinitialiser le champ de nombre de jours
+                      _dailyCountController.clear();
                     } else if (value == MedicReminderType.weekly) {
                       _selectedFixedDates.clear();
-                      _dailyCountController
-                          .clear(); // Réinitialiser le champ de nombre de jours
+                      _dailyCountController.clear();
                     } else if (value == MedicReminderType.fixedDate) {
                       _selectedDaysOfWeek.clear();
-                      _dailyCountController
-                          .clear(); // Réinitialiser le champ de nombre de jours
+                      _dailyCountController.clear();
                     }
                   });
                 },
@@ -114,10 +134,7 @@ class _AddMedicViewState extends State<AddMedicView> {
                   border: OutlineInputBorder(),
                 ),
               ),
-
               const SizedBox(height: 16),
-
-              // Affichage d'un champ pour le nombre de jours si le type est quotidien
               if (_selectedType == MedicReminderType.daily) ...[
                 TextFormField(
                   controller: _dailyCountController,
@@ -127,18 +144,13 @@ class _AddMedicViewState extends State<AddMedicView> {
                   ),
                   keyboardType: TextInputType.number,
                   validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Entrez un nombre de jours';
-                    }
-                    if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                    if (value!.isEmpty) return 'Entrez un nombre de jours';
+                    if (int.tryParse(value) == null || int.parse(value) <= 0)
                       return 'Veuillez entrer un nombre valide';
-                    }
                     return null;
                   },
                 ),
               ],
-
-              // Affichage des jours de la semaine uniquement si le type est hebdomadaire
               if (_selectedType == MedicReminderType.weekly) ...[
                 const Text('Jours de notification :',
                     style: TextStyle(fontWeight: FontWeight.bold)),
@@ -163,8 +175,6 @@ class _AddMedicViewState extends State<AddMedicView> {
                   }),
                 ),
               ],
-
-              // Affichage des dates fixes uniquement si le type est fixe
               if (_selectedType == MedicReminderType.fixedDate) ...[
                 const SizedBox(height: 16),
                 const Text('Dates fixes :',
@@ -206,25 +216,31 @@ class _AddMedicViewState extends State<AddMedicView> {
         ),
       ),
       bottomNavigationBar: Container(
-        // Ajouter le bouton dans le BottomNavigationBar
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom +
-              16.0, // Ajout de padding bas
-          left: 16.0, // Ajout de padding gauche
-          right: 16.0, // Ajout de padding droit
-          top: 12.0, // Ajout de padding supérieur
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
+          left: 16.0,
+          right: 16.0,
+          top: 12.0,
         ),
         child: ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             if (_formKey.currentState!.validate()) {
               final newMedic = Medic(
                 name: _nameController.text,
                 description: _descriptionController.text,
+                stock: int.parse(_stockController.text), // Ajout du stock
                 time: _selectedTime,
                 reminderType: _selectedType,
-                daysOfWeek: _selectedDaysOfWeek, // Ajout des jours sélectionnés
-                fixedDates: _selectedFixedDates, // Ajout des dates fixes
+                daysOfWeek: _selectedDaysOfWeek,
+                fixedDates: _selectedFixedDates,
+                durationInDays: _dailyCountController.text.isNotEmpty
+                    ? int.parse(_dailyCountController.text)
+                    : null,
               );
+
+              // Enregistrer le médicament dans SharedPreferences
+              await _saveMedic(newMedic);
+
               Navigator.pop(context, newMedic);
             }
           },
