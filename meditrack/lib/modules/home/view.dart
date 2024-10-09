@@ -157,7 +157,9 @@ class _HomeViewState extends State<HomeView> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => CalendarView()),
-              );
+              ).then((_) {
+                _loadMedicList(); // Recharger la liste des médicaments au retour
+              });
             },
           ),
         ],
@@ -185,7 +187,7 @@ class _HomeViewState extends State<HomeView> {
                         elevation: 4,
                         child: ListTile(
                           leading: const Icon(Icons.medication,
-                              color: Colors.blueAccent, size: 40),
+                              color: Colors.blue, size: 40),
                           title: Text(
                             medic.name,
                             style: const TextStyle(
@@ -229,7 +231,7 @@ class _HomeViewState extends State<HomeView> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
-                                      MedicDetailView(medic: medic)),
+                                      MedicEditView(medic: medic)),
                             );
                           },
                         ),

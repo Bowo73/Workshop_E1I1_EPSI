@@ -16,8 +16,7 @@ class _AddMedicViewState extends State<AddMedicView> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _dailyCountController = TextEditingController();
-  final TextEditingController _stockController =
-      TextEditingController(); // Nouveau contrôleur pour le stock
+  final TextEditingController _stockController = TextEditingController();
   TimeOfDay _selectedTime = TimeOfDay.now();
   MedicReminderType _selectedType = MedicReminderType.daily;
 
@@ -35,14 +34,8 @@ class _AddMedicViewState extends State<AddMedicView> {
 
   Future<void> _saveMedic(Medic newMedic) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    // Récupérer la liste actuelle des médicaments depuis SharedPreferences
     List<String> savedMedicList = prefs.getStringList('medicsList') ?? [];
-
-    // Convertir le nouveau médicament en JSON et ajouter à la liste
     savedMedicList.add(jsonEncode(newMedic.toJson()));
-
-    // Sauvegarder la liste mise à jour
     await prefs.setStringList('medicsList', savedMedicList);
   }
 
@@ -50,7 +43,10 @@ class _AddMedicViewState extends State<AddMedicView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ajouter un Médicament'),
+        foregroundColor: Colors.white,
+        title: const Text('Ajouter un Médicament',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.blue, // Couleur de la barre d'application
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -59,26 +55,22 @@ class _AddMedicViewState extends State<AddMedicView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextFormField(
+              _buildTextField(
                 controller: _nameController,
-                decoration:
-                    const InputDecoration(labelText: 'Nom du Médicament'),
+                label: 'Nom du Médicament',
                 validator: (value) => value!.isEmpty ? 'Entrez un nom' : null,
               ),
-              TextFormField(
+              const SizedBox(height: 16),
+              _buildTextField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
+                label: 'Description',
                 validator: (value) =>
                     value!.isEmpty ? 'Entrez une description' : null,
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _stockController, // Champ pour le stock
-                decoration: const InputDecoration(
-                  labelText: 'Stock disponible',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
+              _buildTextField(
+                controller: _stockController,
+                label: 'Stock disponible',
                 validator: (value) {
                   if (value!.isEmpty) return 'Entrez un stock';
                   if (int.tryParse(value) == null || int.parse(value) < 0)
@@ -87,62 +79,14 @@ class _AddMedicViewState extends State<AddMedicView> {
                 },
               ),
               const SizedBox(height: 16),
-              ListTile(
-                title:
-                    Text("Heure de prise : ${_selectedTime.format(context)}"),
-                trailing: const Icon(Icons.access_time),
-                onTap: () async {
-                  final time = await showTimePicker(
-                    context: context,
-                    initialTime: _selectedTime,
-                  );
-                  if (time != null) {
-                    setState(() {
-                      _selectedTime = time;
-                    });
-                  }
-                },
-              ),
+              _buildTimePicker(),
               const SizedBox(height: 16),
-              DropdownButtonFormField<MedicReminderType>(
-                value: _selectedType,
-                dropdownColor: Colors.white,
-                items: MedicReminderType.values.map((type) {
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(getSimpleReminderTypeText(type, null)),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedType = value!;
-                    if (value == MedicReminderType.daily) {
-                      _selectedDaysOfWeek.clear();
-                      _selectedFixedDates.clear();
-                      _dailyCountController.clear();
-                    } else if (value == MedicReminderType.weekly) {
-                      _selectedFixedDates.clear();
-                      _dailyCountController.clear();
-                    } else if (value == MedicReminderType.fixedDate) {
-                      _selectedDaysOfWeek.clear();
-                      _dailyCountController.clear();
-                    }
-                  });
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Type de Rappel',
-                  border: OutlineInputBorder(),
-                ),
-              ),
+              _buildReminderTypeDropdown(),
               const SizedBox(height: 16),
               if (_selectedType == MedicReminderType.daily) ...[
-                TextFormField(
+                _buildTextField(
                   controller: _dailyCountController,
-                  decoration: const InputDecoration(
-                    labelText: 'Nombre de jours',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
+                  label: 'Nombre de jours',
                   validator: (value) {
                     if (value!.isEmpty) return 'Entrez un nombre de jours';
                     if (int.tryParse(value) == null || int.parse(value) <= 0)
@@ -159,7 +103,6 @@ class _AddMedicViewState extends State<AddMedicView> {
                   children: List<Widget>.generate(7, (index) {
                     final isSelected = _selectedDaysOfWeek.contains(index + 1);
                     return ChoiceChip(
-                      backgroundColor: Colors.white,
                       label: Text(_daysOfWeek[index]),
                       selected: isSelected,
                       onSelected: (selected) {
@@ -228,7 +171,7 @@ class _AddMedicViewState extends State<AddMedicView> {
               final newMedic = Medic(
                 name: _nameController.text,
                 description: _descriptionController.text,
-                stock: int.parse(_stockController.text), // Ajout du stock
+                stock: int.parse(_stockController.text),
                 time: _selectedTime,
                 reminderType: _selectedType,
                 daysOfWeek: _selectedDaysOfWeek,
@@ -238,13 +181,113 @@ class _AddMedicViewState extends State<AddMedicView> {
                     : null,
               );
 
-              // Enregistrer le médicament dans SharedPreferences
               await _saveMedic(newMedic);
-
               Navigator.pop(context, newMedic);
             }
           },
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            textStyle: const TextStyle(fontSize: 18),
+          ),
           child: const Text('Ajouter le Médicament'),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    String? Function(String?)? validator,
+    bool isNumber = false,
+  }) {
+    return Card(
+      elevation: 4,
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          // Ajoutez les bordures personnalisées
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+                color: Colors
+                    .transparent), // Couleur de bordure quand le champ est activé
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+                color: Colors
+                    .transparent), // Couleur de bordure quand le champ est sélectionné
+          ),
+          contentPadding: const EdgeInsets.all(12.0),
+        ),
+        validator: validator,
+        keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+      ),
+    );
+  }
+
+  Widget _buildTimePicker() {
+    return Card(
+      elevation: 4,
+      child: ListTile(
+        title: Text("Heure de prise : ${_selectedTime.format(context)}"),
+        trailing: const Icon(Icons.access_time),
+        onTap: () async {
+          final time = await showTimePicker(
+            context: context,
+            initialTime: _selectedTime,
+          );
+          if (time != null) {
+            setState(() {
+              _selectedTime = time;
+            });
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildReminderTypeDropdown() {
+    return Card(
+      elevation: 4,
+      child: DropdownButtonFormField<MedicReminderType>(
+        value: _selectedType,
+        items: MedicReminderType.values.map((type) {
+          return DropdownMenuItem(
+            value: type,
+            child: Text(getSimpleReminderTypeText(type, null)),
+          );
+        }).toList(),
+        onChanged: (value) {
+          setState(() {
+            _selectedType = value!;
+            if (value == MedicReminderType.daily) {
+              _selectedDaysOfWeek.clear();
+              _selectedFixedDates.clear();
+              _dailyCountController.clear();
+            } else if (value == MedicReminderType.weekly) {
+              _selectedFixedDates.clear();
+              _dailyCountController.clear();
+            } else if (value == MedicReminderType.fixedDate) {
+              _selectedDaysOfWeek.clear();
+              _dailyCountController.clear();
+            }
+          });
+        },
+        decoration: const InputDecoration(
+          labelText: 'Type de Rappel',
+          border: OutlineInputBorder(),
+          contentPadding: EdgeInsets.all(12.0),
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+                color: Colors
+                    .transparent), // Couleur de bordure quand le champ est activé
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(
+                color: Colors
+                    .transparent), // Couleur de bordure quand le champ est sélectionné
+          ),
         ),
       ),
     );
