@@ -271,6 +271,7 @@ class _MedicEditViewState extends State<MedicEditView> {
               return ChoiceChip(
                 label: Text(
                     ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'][index]),
+                backgroundColor: Colors.white,
                 selected: isSelected,
                 onSelected: (selected) {
                   setState(() {

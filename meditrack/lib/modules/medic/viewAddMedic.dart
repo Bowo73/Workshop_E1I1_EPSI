@@ -104,6 +104,7 @@ class _AddMedicViewState extends State<AddMedicView> {
                     final isSelected = _selectedDaysOfWeek.contains(index + 1);
                     return ChoiceChip(
                       label: Text(_daysOfWeek[index]),
+                      backgroundColor: Colors.white,
                       selected: isSelected,
                       onSelected: (selected) {
                         setState(() {
@@ -251,6 +252,7 @@ class _AddMedicViewState extends State<AddMedicView> {
     return Card(
       elevation: 4,
       child: DropdownButtonFormField<MedicReminderType>(
+        dropdownColor: Colors.white,
         value: _selectedType,
         items: MedicReminderType.values.map((type) {
           return DropdownMenuItem(
